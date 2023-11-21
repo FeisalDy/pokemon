@@ -21,3 +21,19 @@ export type Pokemon = {
     }
   }
 }
+
+export type PokemonType = {
+  results: {
+    name: string
+    url: string
+  }[]
+}
+
+export type PokemonTypeDetail = {
+  pokemon: {
+    pokemon: {
+      name: string
+      url: string
+    }
+  }[]
+}
