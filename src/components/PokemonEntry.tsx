@@ -12,12 +12,17 @@ export default function PokemonEntry ({ name }: { name: string }) {
         {pokemon && (
           <div className='flex flex-col items-center rounded-md bg-slate-500 backdrop-blur'>
             <h1 className='text-center text-capitalize'>{pokemon.name}</h1>
-            <Image
-              src={pokemon.sprites.other['official-artwork'].front_default}
-              alt={'Pokemon: ' + pokemon.name}
-              width={200}
-              height={200}
-            />
+            {pokemon.sprites &&
+              pokemon.sprites.other &&
+              pokemon.sprites.other['official-artwork'] &&
+              pokemon.sprites.other['official-artwork'].front_default && (
+                <Image
+                  src={pokemon.sprites.other['official-artwork'].front_default}
+                  alt={'Pokemon: ' + pokemon.name}
+                  width={200}
+                  height={200}
+                />
+              )}
           </div>
         )}
       </div>

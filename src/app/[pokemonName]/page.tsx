@@ -5,17 +5,77 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useState, useEffect } from 'react'
+import { redirect } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 export default function PokemonDetail () {
+  const { data: session, status } = useSession()
   const { pokemonName } = useParams() || ''
   let nameValue: string = pokemonName as string
   const { pokemon, pokemonLoading } = usePokemon(nameValue)
+  const [submitting, setSubmitting] = useState(false)
+
+  const updatePet = async () => {
+    setSubmitting(true)
+
+    try {
+      const res = await fetch(`/api/save`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          email: session?.user?.email,
+          pet: pokemon?.name.toLowerCase()
+        })
+      })
+
+      if (res.ok) {
+        redirect('/')
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const deletePet = async () => {
+    setSubmitting(true)
+
+    try {
+      const res = await fetch(`/api/save`, {
+        method: 'DELETE',
+        body: JSON.stringify({
+          email: session?.user?.email,
+          pet: pokemon?.name.toLowerCase()
+        })
+      })
+
+      if (res.ok) {
+        // Handle successful deletion
+        console.log('Pet deleted successfully!')
+      } else {
+        // Handle deletion failure
+        console.error('Error deleting pet:', res.statusText)
+      }
+    } catch (error) {
+      // Handle network errors
+      console.error('Error deleting pet:', error)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <>
       <Head>{pokemon && <title>{`${pokemon?.name}`}</title>}</Head>
       <Button className='m-2' onClick={() => window.history.back()}>
         Back
+      </Button>
+      <Button className='m-2' onClick={updatePet}>
+        Save as Pet
+      </Button>
+      <Button className='m-2' variant='destructive' onClick={deletePet}>
+        Delete as Pet
       </Button>
       <Card className='flex flex-col items-center'>
         {pokemonLoading && <div>Loading...</div>}
