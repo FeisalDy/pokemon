@@ -4,13 +4,19 @@ import PokemonEntry from '@/components/PokemonEntry'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { usePokemon, usePokemons, usePokemonsByType } from '@/hooks/usePokemon'
+import { usePokemon, usePokemons, usePokemonsByType } from '@/hooks/usePokemon'
 import { Card } from '@/components/ui/card'
+import useUpdateQueryString from '@/hooks/useUpdateQueryString'
+import { Fillter } from '@/components/Fillter'
+import { useSession } from 'next-auth/react'
+import { useEffect, useState } from 'react'
 import useUpdateQueryString from '@/hooks/useUpdateQueryString'
 import { Fillter } from '@/components/Fillter'
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 
 export default function Home () {
+  const updateQueryString = useUpdateQueryString()
   const updateQueryString = useUpdateQueryString()
   const searchParams = useSearchParams()
   const page = parseInt(searchParams.get('page') ?? '1')
@@ -45,6 +51,9 @@ export default function Home () {
   const endIndex = startIndex + pageSize
 
   const { pokemons, pokemonsLoading } = usePokemons(page)
+  const { pokemon, pokemonLoading } = usePokemon(name)
+  const { pokemonsByType, pokemonsByTypeLoading } = usePokemonsByType(fillter)
+  console.log(pokemonsByType)
   const { pokemon, pokemonLoading } = usePokemon(name)
   const { pokemonsByType, pokemonsByTypeLoading } = usePokemonsByType(fillter)
   console.log(pokemonsByType)
@@ -107,14 +116,74 @@ export default function Home () {
         </div>
       )}
 
+    <Card className='mx-auto'>
+      <Fillter />
+
+      {fillter && !name && (
+        <div className='grid grid-cols-4 gap-4'>
+          {pokemonsByType &&
+            pokemonsByType?.pokemon
+              ?.slice(startIndex, endIndex)
+              .map((pokemon, index) => (
+                <div
+                  key={pokemon?.pokemon?.name}
+                  style={{
+                    background: user?.pets?.includes(pokemon.pokemon.name)
+                      ? 'goldenrod'
+                      : 'transparent'
+                  }}
+                >
+                  <PokemonEntry name={pokemon?.pokemon?.name} />
+                </div>
+              ))}
+        </div>
+      )}
+
+      {name ? (
+        pokemon ? (
+          <div
+            key={pokemon.name}
+            style={{
+              background: user?.pets?.includes(pokemon.name)
+                ? 'goldenrod'
+                : 'transparent'
+            }}
+          >
+            <PokemonEntry name={pokemon.name} />
+          </div>
+        ) : (
+          <div>Not found</div>
+        )
+      ) : null}
+
+      {!fillter && !name && (
+        <div className='grid grid-cols-4 gap-4'>
+          {pokemons?.results.map(pokemonEntry => (
+            <div
+              key={pokemonEntry.name}
+              style={{
+                background: user?.pets?.includes(pokemonEntry.name)
+                  ? 'goldenrod'
+                  : 'transparent'
+              }}
+            >
+              <PokemonEntry name={pokemonEntry.name} />
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className='flex gap-2 justify-between m-2'>
         <Button
+          onClick={() => handlePageNavigation('previous')}
           onClick={() => handlePageNavigation('previous')}
           disabled={!pokemons?.previous}
         >
           Previous page
         </Button>
         <Button
+          onClick={() => handlePageNavigation('next')}
+          disabled={!pokemons?.next || name !== ''}
           onClick={() => handlePageNavigation('next')}
           disabled={!pokemons?.next || name !== ''}
         >
