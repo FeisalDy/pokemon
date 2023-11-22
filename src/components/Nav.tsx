@@ -29,7 +29,9 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Badge> {session.user?.email}</Badge>
+              <Badge>
+                <Link href='/profile'>{session.user?.email} </Link>
+              </Badge>
               <li>
                 <Button
                   onClick={() => {

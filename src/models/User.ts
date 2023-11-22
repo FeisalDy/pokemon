@@ -2,7 +2,15 @@ import mongoose from 'mongoose'
 
 const { Schema } = mongoose
 
-const userSchema = new Schema(
+interface User {
+  email: string
+  password?: string
+  pets?: string[]
+  latitude?: number
+  longitude?: number
+}
+
+const userSchema = new Schema<User>(
   {
     email: {
       type: String,
@@ -13,7 +21,15 @@ const userSchema = new Schema(
       type: String,
       required: false
     },
-    pets: [{ type: String }] // Add an array field to store pets
+    pets: [{ type: String }],
+    latitude: {
+      type: Number,
+      default: null
+    },
+    longitude: {
+      type: Number,
+      default: null
+    }
   },
 
   { timestamps: true }

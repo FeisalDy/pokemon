@@ -1,8 +1,11 @@
 import User from '@/models/User'
 import connect from '@/lib/db'
-import { NextResponse } from 'next/server'
 
-export const GET = async (req: any, { params }) => {
+type Params = {
+  email: string
+}
+
+export const GET = async (req: any, { params }: { params: Params }) => {
   try {
     await connect()
 

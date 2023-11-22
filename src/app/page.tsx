@@ -18,7 +18,6 @@ export default function Home () {
   const fillter = searchParams.get('fillter') ?? ''
   const { data: session, status } = useSession()
   const [user, setUser] = useState([])
-  console.log(user?.pets)
   useEffect(() => {
     // fetch data
     const fetchPosts = async () => {
