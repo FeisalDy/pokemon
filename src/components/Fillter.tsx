@@ -1,8 +1,5 @@
 'use client'
-
 import * as React from 'react'
-import { DropdownMenuCheckboxItemProps } from '@radix-ui/react-dropdown-menu'
-
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,21 +12,22 @@ import {
 } from '@/components/ui/dropdown-menu'
 import useUpdateQueryString from '@/hooks/useUpdateQueryString'
 import { useTypeList } from '@/hooks/usePokemon'
-import { PokemonType } from '../models/Pokemon'
+import { useState, useEffect } from 'react'
 
-type Checked = DropdownMenuCheckboxItemProps['checked']
+type FillterProps = {
+  fillter: string
+}
 
-export function Fillter () {
+export function Fillter ({ fillter }: FillterProps) {
   const { typeList, typeListLoading } = useTypeList()
 
-  console.log(typeList)
   const typeNames = typeList?.results?.map(type => type.name)
   typeNames?.unshift('Choose')
   const updateQueryString = useUpdateQueryString()
 
-  const [position, setPosition] = React.useState('')
+  const [position, setPosition] = useState(fillter)
 
-  React.useEffect(() => {
+  useEffect(() => {
     const selectedValue = position === 'Choose' ? '' : position
     updateQueryString({ fillter: selectedValue?.toString() })
   }, [position, updateQueryString])

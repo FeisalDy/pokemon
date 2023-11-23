@@ -15,6 +15,7 @@ export default function PokemonDetail () {
   let nameValue: string = pokemonName as string
   const { pokemon, pokemonLoading } = usePokemon(nameValue)
   const [submitting, setSubmitting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const updatePet = async () => {
     setSubmitting(true)
@@ -32,14 +33,13 @@ export default function PokemonDetail () {
         redirect('/')
       }
     } catch (error) {
-      console.log(error)
     } finally {
       setSubmitting(false)
     }
   }
 
   const deletePet = async () => {
-    setSubmitting(true)
+    setDeleting(true)
 
     try {
       const res = await fetch(`/api/save`, {
@@ -51,17 +51,14 @@ export default function PokemonDetail () {
       })
 
       if (res.ok) {
-        // Handle successful deletion
         console.log('Pet deleted successfully!')
       } else {
-        // Handle deletion failure
         console.error('Error deleting pet:', res.statusText)
       }
     } catch (error) {
-      // Handle network errors
       console.error('Error deleting pet:', error)
     } finally {
-      setSubmitting(false)
+      setDeleting(false)
     }
   }
 
@@ -72,10 +69,10 @@ export default function PokemonDetail () {
         Back
       </Button>
       <Button className='m-2' onClick={updatePet}>
-        Save as Pet
+        {submitting ? 'Saving...' : 'Save as Pet'}
       </Button>
       <Button className='m-2' variant='destructive' onClick={deletePet}>
-        Delete as Pet
+        {deleting ? 'Deleting...' : 'Delete as Pet'}
       </Button>
       <Card className='flex flex-col items-center'>
         {pokemonLoading && <div>Loading...</div>}
@@ -91,7 +88,7 @@ export default function PokemonDetail () {
             />
             <CardContent className=''>
               <div>
-                <strong>Types:</strong>{' '}
+                <strong>Types:</strong>
                 {pokemon.types.map(type => type.type.name).join(', ')}
               </div>
               <div>

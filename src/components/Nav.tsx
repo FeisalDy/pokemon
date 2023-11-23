@@ -5,46 +5,92 @@ import { signOut, useSession } from 'next-auth/react'
 import Search from './Search'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import Image from 'next/image'
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle
+} from '@/components/ui/navigation-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 const Navbar = () => {
   const { data: session }: any = useSession()
   return (
-    <div>
-      <ul className='flex justify-between p-4 items-center'>
-        <div>
-          <Link href='/'>
-            <li>Home</li>
-          </Link>
-        </div>
-        <div className='flex gap-2'>
-          <Search />
-          {!session ? (
-            <>
-              <Link href='/login'>
-                <Button>Login</Button>
-              </Link>
-              <Link href='/register'>
-                <Button variant='outline'>Register</Button>
-              </Link>
-            </>
-          ) : (
-            <>
-              <Badge>
-                <Link href='/profile'>{session.user?.email} </Link>
-              </Badge>
-              <li>
-                <Button
-                  onClick={() => {
-                    signOut()
-                  }}
-                >
-                  Logout
-                </Button>
-              </li>
-            </>
-          )}
-        </div>
-      </ul>
+    <div className='flex justify-between px-4'>
+      <Link href='/'>
+        <Image src={'/logo.png'} width={100} height={100} alt='logo' />
+      </Link>
+      <NavigationMenu className=''>
+        <NavigationMenuList className='gap-2'>
+          {/* <NavigationMenuItem>
+            <Link href='/docs' legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Documentation
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem> */}
+
+          <NavigationMenuItem>
+            <Search />
+          </NavigationMenuItem>
+
+          <NavigationMenuItem className='flex gap-2'>
+            {!session ? (
+              <>
+                <Link href='/login'>
+                  <Button>Login</Button>
+                </Link>
+                <Link href='/register'>
+                  <Button variant='outline'>Register</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Avatar>
+                      <AvatarImage src={session.user?.image} />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <Link href='/profile'>
+                      <DropdownMenuItem>Profile</DropdownMenuItem>
+                    </Link>
+                    <Link href='/lokasi'>
+                      <DropdownMenuItem>Find Nearby</DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuItem>
+                      <Button
+                        onClick={() => {
+                          signOut()
+                        }}
+                        className='w-full'
+                      >
+                        Logout
+                      </Button>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
     </div>
   )
 }

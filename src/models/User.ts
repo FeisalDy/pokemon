@@ -2,12 +2,13 @@ import mongoose from 'mongoose'
 
 const { Schema } = mongoose
 
-interface User {
+type User = {
   email: string
   password?: string
   pets?: string[]
   latitude?: number
   longitude?: number
+  address?: string
 }
 
 const userSchema = new Schema<User>(
@@ -28,6 +29,10 @@ const userSchema = new Schema<User>(
     },
     longitude: {
       type: Number,
+      default: null
+    },
+    address: {
+      type: String,
       default: null
     }
   },

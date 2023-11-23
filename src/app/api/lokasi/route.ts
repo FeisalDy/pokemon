@@ -8,7 +8,7 @@ export const POST = async (req: any) => {
   }
 
   await connect()
-  const { email, latitude, longitude } = await req.json()
+  const { email, latitude, longitude, address } = await req.json()
 
   try {
     const user = await User.findOne({ email })
@@ -20,6 +20,7 @@ export const POST = async (req: any) => {
     // Update the user's location
     user.latitude = latitude
     user.longitude = longitude
+    user.address = address
     await user.save()
 
     return new NextResponse('Location updated successfully', { status: 200 })
