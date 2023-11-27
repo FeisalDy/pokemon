@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
 import { redirect } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { CheckIcon } from '@radix-ui/react-icons'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export default function PokemonDetail () {
   const { data: session, status } = useSession()
@@ -16,6 +18,8 @@ export default function PokemonDetail () {
   const { pokemon, pokemonLoading } = usePokemon(nameValue)
   const [submitting, setSubmitting] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showAlert, setShowAlert] = useState('')
+  const [alert, setAlert] = useState(false)
 
   const updatePet = async () => {
     setSubmitting(true)
@@ -30,7 +34,10 @@ export default function PokemonDetail () {
       })
 
       if (res.ok) {
-        redirect('/')
+        // redirect('/')
+        setAlert(true)
+        setShowAlert('saved') // Set state to display the alert
+        setTimeout(() => setAlert(false), 3000)
       }
     } catch (error) {
     } finally {
@@ -51,7 +58,10 @@ export default function PokemonDetail () {
       })
 
       if (res.ok) {
-        console.log('Pet deleted successfully!')
+        // console.log('Pet deleted successfully!')
+        setAlert(true)
+        setShowAlert('deleted') // Set state to display the alert
+        setTimeout(() => setAlert(false), 3000)
       } else {
         console.error('Error deleting pet:', res.statusText)
       }
@@ -65,15 +75,32 @@ export default function PokemonDetail () {
   return (
     <>
       <Head>{pokemon && <title>{`${pokemon?.name}`}</title>}</Head>
-      <Button className='m-2' onClick={() => window.history.back()}>
-        Back
-      </Button>
-      <Button className='m-2' onClick={updatePet}>
-        {submitting ? 'Saving...' : 'Save as Pet'}
-      </Button>
-      <Button className='m-2' variant='destructive' onClick={deletePet}>
-        {deleting ? 'Deleting...' : 'Delete as Pet'}
-      </Button>
+      <Card>
+        <Button className='m-2' onClick={() => window.history.back()}>
+          Back
+        </Button>
+        <Button className='m-2' onClick={updatePet}>
+          {submitting ? 'Saving...' : 'Save as Pet'}
+        </Button>
+        <Button className='m-2' variant='destructive' onClick={deletePet}>
+          {deleting ? 'Deleting...' : 'Delete as Pet'}
+        </Button>
+      </Card>
+      {alert && (
+        <div className='flex justify-end'>
+          <Alert className='w-1/4 absolute transition-opacity  animate-bounce'>
+            <CheckIcon className='h-4 w-4' />
+            <AlertTitle>Success!</AlertTitle>
+            <AlertDescription>
+              {showAlert === 'saved'
+                ? 'Pet saved successfully!'
+                : showAlert === 'deleted'
+                ? 'Pet deleted successfully!'
+                : ''}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       <Card className='flex flex-col items-center'>
         {pokemonLoading && <div>Loading...</div>}
         {pokemon === null && <div>Not found</div>}

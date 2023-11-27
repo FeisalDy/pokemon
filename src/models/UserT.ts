@@ -1,17 +1,9 @@
 export type UserT = {
-  email: string
-  password?: string
-  pets?: string[]
-  latitude?: number
-  longitude?: number
-  address?: string
+  email?: string | null
+  password?: string | null
+  pets?: string[] | null
+  latitude?: number | null
+  longitude?: number | null
+  address?: string | null
+  distance?: number | null
 }
-
-export type UserTArray = {
-  email: string
-  password?: string
-  pets?: string[]
-  latitude?: number
-  longitude?: number
-  address?: string
-}[]

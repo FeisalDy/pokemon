@@ -3,6 +3,15 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 const Register = () => {
   const [error, setError] = useState('')
@@ -64,8 +73,8 @@ const Register = () => {
 
   return (
     sessionStatus !== 'authenticated' && (
-      <div className='flex min-h-screen flex-col items-center justify-between p-24'>
-        <div className='bg-[#212121] p-8 rounded shadow-md w-96'>
+      <Card className='flex min-h-screen flex-col items-center justify-between p-24'>
+        <div className=' p-8 rounded shadow-md w-96'>
           <h1 className='text-4xl text-center font-semibold mb-8'>Register</h1>
           <form onSubmit={handleSubmit}>
             <input
@@ -80,13 +89,9 @@ const Register = () => {
               placeholder='Password'
               required
             />
-            <button
-              type='submit'
-              className='w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600'
-            >
-              {' '}
+            <Button type='submit' className='w-full  text-white py-2'>
               Register
-            </button>
+            </Button>
             <p className='text-red-600 text-[16px] mb-4'>{error && error}</p>
           </form>
           <div className='text-center text-gray-500 mt-4'>- OR -</div>
@@ -97,7 +102,7 @@ const Register = () => {
             Login with an existing account
           </Link>
         </div>
-      </div>
+      </Card>
     )
   )
 }

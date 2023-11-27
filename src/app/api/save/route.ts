@@ -42,18 +42,3 @@ export const DELETE = async (req: any) => {
     return new NextResponse('Error deleting', { status: 500 })
   }
 }
-
-//   const newUser = new User({
-//     email,
-//     password: '122'
-//   })
-
-//   try {
-//     await newUser.save()
-//     return new NextResponse('user is registered', { status: 200 })
-//   } catch (err: any) {
-//     return new NextResponse(err, {
-//       status: 500
-//     })
-//   }
-// }

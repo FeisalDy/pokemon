@@ -9,6 +9,8 @@ type User = {
   latitude?: number
   longitude?: number
   address?: string
+  friends?: string[]
+  image?: string
 }
 
 const userSchema = new Schema<User>(
@@ -32,6 +34,21 @@ const userSchema = new Schema<User>(
       default: null
     },
     address: {
+      type: String,
+      default: null
+    },
+    friends: [
+      {
+        email: {
+          type: String,
+          required: true
+        },
+        distance: {
+          type: Number
+        }
+      }
+    ],
+    image: {
       type: String,
       default: null
     }

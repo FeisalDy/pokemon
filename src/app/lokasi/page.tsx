@@ -1,22 +1,35 @@
 'use client'
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { UserT, UserTArray } from '@/models/UserT'
+import { UserT } from '@/models/UserT'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger
+} from '@/components/ui/hover-card'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Payment, columns } from './columns'
+import { DataTable } from './data-table'
+
+type LocationData = {
+  latitude: number
+  longitude: number
+  address: string
+}
 
 const Mensen = () => {
-  const [button, setButton] = useState(false)
-  const [location, setLocation] = useState<{
-    latitude?: number
-    longitude?: number
-  }>()
   const [loading, setLoading] = useState(false)
   const { data: session, status } = useSession()
-  const [address, setAddress] = useState('')
   const [user, setUser] = useState<UserT | null>(null)
-  const [user2, setUser2] = useState<UserTArray | null>(null)
-  const [nearbyUsers, setNearbyUsers] = useState<UserTArray | null>(null)
+  const [user2, setUser2] = useState<UserT[]>([])
+  const [nearbyUsers, setNearbyUsers] = useState<UserT[] | null>(null)
+  const [showAlert, setShowAlert] = useState(false)
+  const [showAlertErr, setShowAlertErr] = useState(false)
+  const [tableData, setTableData] = useState<Payment[]>([])
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -32,21 +45,51 @@ const Mensen = () => {
     if (session?.user?.email) fetchPosts()
   }, [session?.user?.email])
 
-  useEffect(() => {
-    if ('geolocation' in navigator) {
-      setLoading(true)
-      navigator.geolocation.getCurrentPosition(({ coords }) => {
-        const { latitude, longitude } = coords
-        setTimeout(() => {
-          setLocation({ latitude, longitude })
-          setLoading(false)
-        }, 1000)
-      })
-    }
-  }, [button])
+  const API_KEY = 'cb161165a80f4f148808ac431e8eb7df'
 
-  const updateLocation = async () => {
+  const getLocation = async () => {
     setLoading(true)
+
+    try {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(({ coords }) => {
+          const { latitude, longitude } = coords
+
+          const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude},${longitude}&key=${API_KEY}`
+          fetch(url)
+            .then(response => response.json())
+            .then(data => {
+              if (data.status.code === 200) {
+                // setAddress(data.results[0].formatted)
+
+                saveLocationToDB({
+                  latitude,
+                  longitude,
+                  address: data.results[0].formatted
+                })
+              } else {
+                setShowAlertErr(true)
+                setTimeout(() => setShowAlertErr(false), 3000)
+              }
+            })
+            .catch(error =>
+              console.log('An error occured when fetching location', error)
+            )
+        })
+      }
+    } catch (error) {
+      setShowAlertErr(true)
+      setTimeout(() => setShowAlertErr(false), 3000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const saveLocationToDB = async ({
+    latitude,
+    longitude,
+    address
+  }: LocationData) => {
     try {
       const res = await fetch('/api/lokasi', {
         method: 'POST',
@@ -55,40 +98,23 @@ const Mensen = () => {
         },
         body: JSON.stringify({
           email: session?.user?.email,
-          latitude: location?.latitude,
-          longitude: location?.longitude,
-          address: address
+          latitude,
+          longitude,
+          address
         })
       })
 
       if (res.status === 200) {
-        console.log('Location updated successfully')
+        setShowAlert(true)
+        setTimeout(() => setShowAlert(false), 3000)
       } else {
-        console.error('Failed to update location')
+        setShowAlertErr(true)
+        setTimeout(() => setShowAlertErr(false), 3000)
       }
     } catch (error) {
-      console.error('Error updating location', error)
-    } finally {
-      setLoading(false)
+      setShowAlertErr(true)
+      setTimeout(() => setShowAlertErr(false), 3000)
     }
-  }
-
-  const API_KEY = 'cb161165a80f4f148808ac431e8eb7df'
-  const latitude = user?.latitude
-  const longitude = user?.longitude
-
-  function getLocationInfo () {
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude},${longitude}&key=${API_KEY}`
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (data.status.code === 200) {
-          setAddress(data.results[0].formatted)
-        } else {
-          console.log('Reverse geolocation request failed.')
-        }
-      })
-      .catch(error => console.error(error))
   }
 
   function calculateDistance (
@@ -110,6 +136,7 @@ const Mensen = () => {
     const distance = R * c // Distance in km
     return distance
   }
+
   const findNearby = () => {
     if (user?.latitude && user?.longitude && user2) {
       const nearbyUsers = user2.reduce((acc, otherUser) => {
@@ -117,8 +144,12 @@ const Mensen = () => {
           otherUser.email !== session?.user?.email &&
           otherUser.latitude !== undefined &&
           otherUser.longitude !== undefined &&
+          otherUser.latitude !== null &&
+          otherUser.longitude !== null &&
           user.latitude !== undefined &&
-          user.longitude !== undefined
+          user.longitude !== undefined &&
+          user.latitude !== null &&
+          user.longitude !== null
         ) {
           const distance = calculateDistance(
             user.latitude,
@@ -128,7 +159,7 @@ const Mensen = () => {
           )
 
           if (distance <= 10) {
-            acc.push(otherUser)
+            acc.push({ ...otherUser, distance })
           }
         }
         return acc
@@ -138,71 +169,96 @@ const Mensen = () => {
     }
   }
 
-  //   const findNearby = () => {
-  //     if (user?.latitude && user?.longitude && user2) {
-  //       const nearbyUsers = []
-  //       // Loop through all users (or retrieve users from an API)
-  //       for (const otherUser of user2) {
-  //         if (otherUser.email !== session?.user?.email) {
-  //           const distance = calculateDistance(
-  //             user.latitude,
-  //             user.longitude,
-  //             otherUser.latitude,
-  //             otherUser.longitude
-  //           )
-
-  //           if (distance <= 10) {
-  //             nearbyUsers.push(otherUser)
-  //           }
-  //         }
-  //       }
-
-  //       setNearbyUsers(nearbyUsers)
-  //     }
-  //   }
-
   return (
     <>
       <Card>
-        <CardHeader className='w-3/12 mx-auto'>
-          <Button onClick={() => setButton(!button)}>Kalibrasi Lokasi</Button>
-          <Button onClick={updateLocation}>Save Lokasi</Button>
-          <Button onClick={getLocationInfo}>Get Lokasi</Button>
-          <Button onClick={findNearby}>Get User</Button>
-        </CardHeader>
+        <CardHeader className='w-3/12 mx-auto'></CardHeader>
 
         <CardContent>
-          {loading ? (
-            <p>Loading...</p>
-          ) : location ? (
-            <div>
-              <h2>Your Location: {address}</h2>
-              <p>Latitude: {location.latitude}</p>
-              <p>Longitude: {location.longitude}</p>
+          {showAlert && (
+            <div className='flex justify-end'>
+              <Alert className='w-1/4 absolute transition-opacity animate-bounce'>
+                <CheckIcon className='h-4 w-4' />
+                <AlertTitle>Success!</AlertTitle>
+                <AlertDescription>
+                  Location saved successfully!
+                </AlertDescription>
+              </Alert>
             </div>
-          ) : null}
+          )}
+          {showAlertErr && (
+            <div className='flex justify-end'>
+              <Alert
+                variant='destructive'
+                className='w-1/4 absolute transition-opacity animate-bounce bg-background'
+              >
+                <ExclamationTriangleIcon className='h-4 w-4' />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  Something went wrong. Please try again later.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+          <div className='flex justify-evenly gap-2'>
+            <Button className='w-full' onClick={getLocation}>
+              Update Lokasi
+            </Button>
+            <Button className='w-full' onClick={findNearby}>
+              User Terdekat
+            </Button>
+          </div>
+          <div className='my-10'>
+            {loading ? (
+              <p>Loading...</p>
+            ) : (
+              <div>
+                <h2>Your Location: {user?.address}</h2>
+                <p>Latitude: {user?.latitude}</p>
+                <p>Longitude: {user?.longitude}</p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className='w-3/12 mx-auto'>
-          <p>Nearby User</p>
+        <CardHeader className=''>
+          <p className='text-center'>Nearby User</p>
         </CardHeader>
         <CardContent>
           {!nearbyUsers ? (
             <p>Tidak ada orang di dekat anda</p>
           ) : (
-            <div>
+            <div className='flex justify-evenly'>
               {nearbyUsers.map((user, index) => (
-                <div key={index}>
-                  <p>{user.email}</p>
-                  <p>{user.latitude}</p>
-                  <p>{user.longitude}</p>
-                  <p>{user.address}</p>
-                </div>
+                <HoverCard key={index}>
+                  <HoverCardTrigger>
+                    <Card className='flex gap-1 items-center p-2'>
+                      <Avatar>
+                        <AvatarImage src='https://github.com/shadcn.png' />
+                        <AvatarFallback>CN</AvatarFallback>
+                      </Avatar>
+                      <p className=''> {user.email}</p>
+                    </Card>
+                  </HoverCardTrigger>
+                  <HoverCardContent className='w-6/12'>
+                    <p>{user.email}</p>
+                    <p className='text-justify'>
+                      User Address : {user.address}
+                    </p>
+                    <p>
+                      Distance: {user.distance ? user.distance.toFixed(2) : ''}
+                      Km
+                    </p>
+                  </HoverCardContent>
+                </HoverCard>
               ))}
             </div>
           )}
+          <div className='container mx-auto py-10'>
+            <DataTable columns={columns} data={user2} />
+          </div>
         </CardContent>
       </Card>
     </>
