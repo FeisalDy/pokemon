@@ -9,7 +9,10 @@ type User = {
   latitude?: number
   longitude?: number
   address?: string
-  friends?: string[]
+  friends?: {
+    email: string
+    distance: number
+  }
   image?: string
 }
 

@@ -2,6 +2,11 @@ import connect from '@/lib/db'
 import User from '@/models/User'
 import { NextResponse } from 'next/server'
 
+export type Friend = {
+  email: string
+  distance?: number
+}
+
 export const POST = async (req: any, res: any) => {
   if (req.method === 'POST') {
     try {
@@ -9,22 +14,19 @@ export const POST = async (req: any, res: any) => {
 
       const { email, friendEmail, distance } = await req.json()
 
-      // Find the current user based on userEmail
       const currentUser = await User.findOne({ email })
 
       if (!currentUser) {
         return res.status(404).json({ message: 'User not found' })
       }
 
-      // Find the friend user based on friendEmail
       const friendUser = await User.findOne({ friendEmail })
 
       if (!friendUser) {
         return res.status(404).json({ message: 'Friend user not found' })
       }
 
-      // Update the distance for the friend in the currentUser's friends array
-      const updatedFriends = currentUser.friends.map(friend => {
+      const updatedFriends = currentUser.friends.map((friend: Friend) => {
         if (friend.email === friendEmail) {
           return { ...friend, distance }
         }

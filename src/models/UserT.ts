@@ -6,4 +6,10 @@ export type UserT = {
   longitude?: number | null
   address?: string | null
   distance?: number | null
+  friends?:
+    | {
+        email: string
+        distance: number
+      }[]
+    | null
 }

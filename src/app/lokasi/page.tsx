@@ -26,7 +26,7 @@ const Mensen = () => {
   const { data: session, status } = useSession()
   const [user, setUser] = useState<UserT | null>(null)
   const [user2, setUser2] = useState<UserT[]>([])
-  const [nearbyUsers, setNearbyUsers] = useState<UserT[] | null>(null)
+  const [nearbyUsers, setNearbyUsers] = useState<UserT[]>([])
   const [showAlert, setShowAlert] = useState(false)
   const [showAlertErr, setShowAlertErr] = useState(false)
   const [tableData, setTableData] = useState<Payment[]>([])
@@ -158,12 +158,22 @@ const Mensen = () => {
             otherUser.longitude
           )
 
+          let status = 'not friend'
+          const isFriend = user.friends?.find(
+            friend => friend.email === otherUser.email
+          )
+
+          if (isFriend) {
+            status = 'is friend'
+          }
+
           if (distance <= 10) {
-            acc.push({ ...otherUser, distance })
+            acc.push({ ...otherUser, distance, status })
           }
         }
         return acc
-      }, [] as UserT[])
+        //   }, [] as UserT[])
+      }, [] as (UserT & { distance: number; status: string })[])
 
       setNearbyUsers(nearbyUsers)
     }
@@ -227,7 +237,7 @@ const Mensen = () => {
           <p className='text-center'>Nearby User</p>
         </CardHeader>
         <CardContent>
-          {!nearbyUsers ? (
+          {/* {!nearbyUsers ? (
             <p>Tidak ada orang di dekat anda</p>
           ) : (
             <div className='flex justify-evenly'>
@@ -255,9 +265,9 @@ const Mensen = () => {
                 </HoverCard>
               ))}
             </div>
-          )}
-          <div className='container mx-auto py-10'>
-            <DataTable columns={columns} data={user2} />
+          )} */}
+          <div className='container mx-auto pb-10'>
+            <DataTable columns={columns} data={nearbyUsers} />
           </div>
         </CardContent>
       </Card>

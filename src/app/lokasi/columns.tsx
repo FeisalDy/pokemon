@@ -55,11 +55,27 @@ export const columns: ColumnDef<UserT>[] = [
   },
   {
     accessorKey: 'distance',
-    header: () => <div className='text-right'>Distance</div>,
+    header: ({ column }) => {
+      return (
+        <div className='text-right'>
+          <Button
+            variant='ghost'
+            className='px-0'
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Distance
+            <ArrowUpDown className='ml-2 h-4 w-4' />
+          </Button>
+        </div>
+      )
+    },
     cell: ({ row }) => {
-      const distance: string = row.getValue('distance')
+      const distance = parseFloat(row.getValue('distance'))
+      const formattedDistance = (distance * 1).toFixed(2)
 
-      return <div className='text-right font-medium'>{distance}</div>
+      return (
+        <div className='text-right font-medium'>{formattedDistance} Km</div>
+      )
     }
   },
   {
@@ -107,12 +123,9 @@ export const columns: ColumnDef<UserT>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              //   onClick={() => navigator.clipboard.writeText(payment.id)}
-              onClick={() => updatePet()}
-            >
-              Copy payment ID
+            <DropdownMenuLabel>Action</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => updatePet()}>
+              Add friend
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View customer</DropdownMenuItem>
@@ -122,5 +135,4 @@ export const columns: ColumnDef<UserT>[] = [
       )
     }
   }
-  // ...
 ]
