@@ -90,27 +90,24 @@ export const columns: ColumnDef<UserT>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const caa = 'feisaldy26@gmail.com'
       const updatePet = async () => {
+        const email = 'feisaldy26@gmail.com'
         try {
           const res = await fetch(`/api/friends/add`, {
             method: 'PATCH',
             body: JSON.stringify({
-              email: caa,
+              email: email,
               friendEmail: row.getValue('email')
             })
           })
 
           if (res.ok) {
             console.log('success')
-            // redirect('/')
-            // setAlert(true)
-            // setShowAlert('saved') // Set state to display the alert
-            // setTimeout(() => setAlert(false), 3000)
+          } else {
+            console.error('Failed to add friend:', res.status)
           }
         } catch (error) {
-        } finally {
-          //   setSubmitting(false)
+          console.error('Error adding friend:', error)
         }
       }
 

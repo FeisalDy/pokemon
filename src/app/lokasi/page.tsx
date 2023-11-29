@@ -6,12 +6,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { UserT } from '@/models/UserT'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger
-} from '@/components/ui/hover-card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Payment, columns } from './columns'
 import { DataTable } from './data-table'
 
@@ -29,7 +23,6 @@ const Mensen = () => {
   const [nearbyUsers, setNearbyUsers] = useState<UserT[]>([])
   const [showAlert, setShowAlert] = useState(false)
   const [showAlertErr, setShowAlertErr] = useState(false)
-  const [tableData, setTableData] = useState<Payment[]>([])
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -172,7 +165,6 @@ const Mensen = () => {
           }
         }
         return acc
-        //   }, [] as UserT[])
       }, [] as (UserT & { distance: number; status: string })[])
 
       setNearbyUsers(nearbyUsers)
@@ -237,35 +229,6 @@ const Mensen = () => {
           <p className='text-center'>Nearby User</p>
         </CardHeader>
         <CardContent>
-          {/* {!nearbyUsers ? (
-            <p>Tidak ada orang di dekat anda</p>
-          ) : (
-            <div className='flex justify-evenly'>
-              {nearbyUsers.map((user, index) => (
-                <HoverCard key={index}>
-                  <HoverCardTrigger>
-                    <Card className='flex gap-1 items-center p-2'>
-                      <Avatar>
-                        <AvatarImage src='https://github.com/shadcn.png' />
-                        <AvatarFallback>CN</AvatarFallback>
-                      </Avatar>
-                      <p className=''> {user.email}</p>
-                    </Card>
-                  </HoverCardTrigger>
-                  <HoverCardContent className='w-6/12'>
-                    <p>{user.email}</p>
-                    <p className='text-justify'>
-                      User Address : {user.address}
-                    </p>
-                    <p>
-                      Distance: {user.distance ? user.distance.toFixed(2) : ''}
-                      Km
-                    </p>
-                  </HoverCardContent>
-                </HoverCard>
-              ))}
-            </div>
-          )} */}
           <div className='container mx-auto pb-10'>
             <DataTable columns={columns} data={nearbyUsers} />
           </div>
