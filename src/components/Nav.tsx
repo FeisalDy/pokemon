@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import Notification from './notification'
 
 const Navbar = () => {
   const { data: session }: any = useSession()
@@ -34,15 +35,7 @@ const Navbar = () => {
       </Link>
       <NavigationMenu className=''>
         <NavigationMenuList className='gap-2'>
-          {/* <NavigationMenuItem>
-            <Link href='/docs' legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Documentation
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem> */}
-
-          <NavigationMenuItem>
+          <NavigationMenuItem className='flex'>
             <Search />
           </NavigationMenuItem>
 
@@ -88,6 +81,7 @@ const Navbar = () => {
                 </DropdownMenu>
               </>
             )}
+            <Notification />
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>

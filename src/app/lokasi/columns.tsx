@@ -88,11 +88,14 @@ export const columns: ColumnDef<UserT>[] = [
     }
   },
   {
+    accessorKey: 'userEmail'
+  },
+  {
     id: 'actions',
     cell: ({ row }) => {
       const updatePet = async () => {
-        const email = 'feisaldy26@gmail.com'
         try {
+          const email = row.getValue('userEmail')
           const res = await fetch(`/api/friends/add`, {
             method: 'PATCH',
             body: JSON.stringify({
@@ -103,6 +106,7 @@ export const columns: ColumnDef<UserT>[] = [
 
           if (res.ok) {
             console.log('success')
+            window.location.reload()
           } else {
             console.error('Failed to add friend:', res.status)
           }
@@ -125,8 +129,6 @@ export const columns: ColumnDef<UserT>[] = [
               Add friend
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )

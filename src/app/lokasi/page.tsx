@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { UserT } from '@/models/UserT'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Payment, columns } from './columns'
+import { columns } from './columns'
 import { DataTable } from './data-table'
+import { useUser, useUsers } from '@/hooks/useUser'
 
 type LocationData = {
   latitude: number
@@ -18,26 +19,13 @@ type LocationData = {
 const Mensen = () => {
   const [loading, setLoading] = useState(false)
   const { data: session, status } = useSession()
-  const [user, setUser] = useState<UserT | null>(null)
-  const [user2, setUser2] = useState<UserT[]>([])
   const [nearbyUsers, setNearbyUsers] = useState<UserT[]>([])
   const [showAlert, setShowAlert] = useState(false)
   const [showAlertErr, setShowAlertErr] = useState(false)
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await fetch(`/api/save/${session?.user?.email}`)
-      const res2 = await fetch('/api/getUser')
-      const data = await res.json()
-      const data2 = await res2.json()
-
-      setUser(data)
-      setUser2(data2)
-    }
-
-    if (session?.user?.email) fetchPosts()
-  }, [session?.user?.email])
-
+  const [err, setErr] = useState<string[]>([])
+  const userEmail = session?.user?.email
+  const { user, userLoading } = useUser(userEmail)
+  const { users, usersLoading } = useUsers()
   const API_KEY = 'cb161165a80f4f148808ac431e8eb7df'
 
   const getLocation = async () => {
@@ -53,8 +41,6 @@ const Mensen = () => {
             .then(response => response.json())
             .then(data => {
               if (data.status.code === 200) {
-                // setAddress(data.results[0].formatted)
-
                 saveLocationToDB({
                   latitude,
                   longitude,
@@ -90,7 +76,7 @@ const Mensen = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: session?.user?.email,
+          email: userEmail,
           latitude,
           longitude,
           address
@@ -130,9 +116,9 @@ const Mensen = () => {
     return distance
   }
 
-  const findNearby = () => {
-    if (user?.latitude && user?.longitude && user2) {
-      const nearbyUsers = user2.reduce((acc, otherUser) => {
+  const findNearby = async () => {
+    if (user?.latitude && user?.longitude && users) {
+      const nearbyUsers = users.reduce((acc, otherUser) => {
         if (
           otherUser.email !== session?.user?.email &&
           otherUser.latitude !== undefined &&
@@ -161,13 +147,21 @@ const Mensen = () => {
           }
 
           if (distance <= 10) {
-            acc.push({ ...otherUser, distance, status })
+            acc.push({ ...otherUser, distance, status, userEmail })
           }
         }
         return acc
-      }, [] as (UserT & { distance: number; status: string })[])
+      }, [] as (UserT & { distance: number; status: string; userEmail: string | null | undefined })[])
 
       setNearbyUsers(nearbyUsers)
+      if (nearbyUsers.length === 0) {
+        setShowAlertErr(true)
+        setTimeout(() => setShowAlertErr(false), 3000)
+        setErr(['Tidak ada user terdekat'])
+      }
+    } else {
+      setShowAlertErr(true)
+      setTimeout(() => setShowAlertErr(false), 3000)
     }
   }
 
@@ -197,7 +191,9 @@ const Mensen = () => {
                 <ExclamationTriangleIcon className='h-4 w-4' />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>
-                  Something went wrong. Please try again later.
+                  {err.length > 0
+                    ? err[0]
+                    : 'Something went wrong. Please try again later.'}
                 </AlertDescription>
               </Alert>
             </div>

@@ -25,20 +25,48 @@ export const PATCH = async (req: any) => {
     const existingUser = await User.findOne({ email: email })
     if (!existingUser) return new Response('User not found', { status: 404 })
 
-    const existingFriend = existingUser.friends.find(
+    const existingFriend = await User.findOne({ email: friendEmail })
+    if (!existingFriend)
+      return new Response('Friend not found', { status: 404 })
+
+    // const existingFriend = existingUser.friends.find(
+    //   (friend: Friend) => friend.email === friendEmail
+    // )
+    const userFriend = existingUser.friends.find(
       (friend: Friend) => friend.email === friendEmail
     )
-
-    if (!existingFriend) {
+    if (!userFriend) {
       existingUser.friends.push({
         email: friendEmail,
         distance: 0
       })
     } else {
-      existingFriend.distance = 1
+      userFriend.distance = 1
+    }
+
+    // if (!existingFriend) {
+    //   existingUser.friends.push({
+    //     email: friendEmail,
+    //     distance: 0
+    //   })
+    // } else {
+    //   existingFriend.distance = 1
+    // }
+
+    const friendFriend = existingFriend.friends.find(
+      (friend: Friend) => friend.email === email
+    )
+    if (!friendFriend) {
+      existingFriend.friends.push({
+        email: email,
+        distance: 0
+      })
+    } else {
+      friendFriend.distance = 1
     }
 
     await existingUser.save()
+    await existingFriend.save()
     await channel.close()
     await connection.close()
 

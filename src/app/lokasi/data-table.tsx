@@ -9,7 +9,8 @@ import {
   SortingState,
   getSortedRowModel,
   ColumnFiltersState,
-  getFilteredRowModel
+  getFilteredRowModel,
+  VisibilityState
 } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import {
@@ -21,6 +22,13 @@ import {
   TableRow
 } from '@/components/ui/table'
 import { DataTablePagination } from './DataTablePagination'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -35,6 +43,8 @@ export function DataTable<TData, TValue> ({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({ userEmail: false })
   const table = useReactTable({
     data,
     columns,
@@ -44,9 +54,11 @@ export function DataTable<TData, TValue> ({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
-      columnFilters
+      columnFilters,
+      columnVisibility
     }
   })
 
@@ -61,6 +73,38 @@ export function DataTable<TData, TValue> ({
           }
           className='max-w-sm'
         />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant='outline' className='ml-auto'>
+              Columns
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align='end'>
+            {table
+              .getAllColumns()
+              .filter(
+                column => column.getCanHide() && column.id !== 'userEmail'
+              )
+              .map(column => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className='capitalize'
+                    checked={column.getIsVisible()}
+                    onCheckedChange={value => {
+                      if (column.id !== 'userEmail') {
+                        column.toggleVisibility(!!value)
+                      } else {
+                        column.toggleVisibility(false)
+                      }
+                    }}
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                )
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className='rounded-md border'>
         <Table>

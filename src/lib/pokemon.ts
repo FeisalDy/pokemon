@@ -1,4 +1,4 @@
-import Axios from '@/lib/axios'
+import { Axios } from '@/lib/axios'
 import {
   Pokemon,
   PokemonPage,

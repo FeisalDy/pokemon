@@ -2,18 +2,19 @@ import mongoose from 'mongoose'
 
 const { Schema } = mongoose
 
-interface Friend extends Document {
+export interface Friend extends Document {
   email: string
   distance: number
 }
 
-interface Notification extends Document {
+export interface Notification extends Document {
+  _id: string
   message: string
   status: 'unread' | 'read'
   createdAt: Date
 }
 
-interface User extends Document {
+export interface User extends Document {
   email: string
   password?: string
   pets?: string[]
